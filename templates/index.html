@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ translations.title }}</title>
+ <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #f8f9fa;
+            margin: 20px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #007bff;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .language-selector {
+            margin-bottom: 20px;
+        }
+
+        .language-selector img {
+            width: 40px;
+            cursor: pointer;
+            margin: 5px;
+            border: 2px solid transparent;
+            border-radius: 5px;
+        }
+
+        .language-selector img:hover {
+            border: 2px solid #007bff;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-top: 10px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        input {
+            width: 95%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            background-color: #007bff;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .category-section {
+            background-color: #f1f1f1;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+
+        /* Spazio extra tra le sezioni */
+        .spacer {
+            margin-top: 40px;
+        }
+
+        .pdf-section {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .pdf-section h2 {
+            margin-bottom: 15px;
+        }
+    </style>
+    <script>
+        function changeLanguage(lang) {
+            fetch(`/set_language/${lang}`)
+                .then(response => location.reload());
+        }
+
+        async function addExpense(category) {
+            const date = document.getElementById("date").value;
+            const amount = document.getElementById(`amount_${category}`).value;
+            const description = document.getElementById(`description_${category}`).value;
+
+            if (!date || !amount) {
+                alert("{{ translations.error_fill_fields }}");
+                return;
+            }
+
+            const response = await fetch("/add_expense", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ date, category, amount, description })
+            });
+
+            if (response.ok) {
+                alert("{{ translations.success }}");
+                location.reload();
+            } else {
+                alert("{{ translations.error }}");
+            }
+        }
+
+        async function generateReport() {
+    const startDate = document.getElementById("start_date").value;
+    const endDate = document.getElementById("end_date").value;
+    const selectedLanguage = localStorage.getItem("language") || "es"; // Recupera la lingua selezionata
+
+    if (!startDate || !endDate) {
+        alert("Por favor, selecciona un rango de fechas.");
+        return;
+    }
+
+    // Genera il report passando anche la lingua
+    window.location.href = `/generate_report?start_date=${startDate}&end_date=${endDate}&lang=${selectedLanguage}`;
+}
+
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ translations.title }}</h1>
+
+        <!-- Selettore lingue con bandiere -->
+        <div class="language-selector">
+            <img src="/static/es.png" onclick="changeLanguage('es')" alt="Español">
+            <img src="/static/en.png" onclick="changeLanguage('en')" alt="English">
+            <img src="/static/it.png" onclick="changeLanguage('it')" alt="Italiano">
+        </div>
+
+        <label for="date">{{ translations.date }}</label>
+        <input type="date" id="date">
+
+        <div class="category-section">
+            <h2>{{ translations.crew }}</h2>
+            <input type="number" id="amount_Crew" step="0.01" placeholder="{{ translations.amount }}">
+            <input type="text" id="description_Crew" placeholder="{{ translations.description }}">
+            <button onclick="addExpense('Crew')">{{ translations.add_expense }}</button>
+        </div>
+
+        <div class="category-section">
+            <h2>{{ translations.fuel }}</h2>
+            <input type="number" id="amount_Combustibles" step="0.01" placeholder="{{ translations.amount }}">
+            <input type="text" id="description_Combustibles" placeholder="{{ translations.description }}">
+            <button onclick="addExpense('Combustibles')">{{ translations.add_expense }}</button>
+        </div>
+
+        <div class="category-section">
+            <h2>{{ translations.shopping }}</h2>
+            <input type="number" id="amount_Compras" step="0.01" placeholder="{{ translations.amount }}">
+            <input type="text" id="description_Compras" placeholder="{{ translations.description }}">
+            <button onclick="addExpense('Compras')">{{ translations.add_expense }}</button>
+        </div>
+
+        <div class="category-section">
+            <h2>{{ translations.maintenance }}</h2>
+            <input type="number" id="amount_Varios" step="0.01" placeholder="{{ translations.amount }}">
+            <input type="text" id="description_Varios" placeholder="{{ translations.description }}">
+            <button onclick="addExpense('Varios')">{{ translations.add_expense }}</button>
+        </div>
+
+        <!-- Spazio extra prima del PDF -->
+        <div class="spacer"></div>
+
+  
+<!-- Sezione per generare il PDF -->
+<div class="pdf-section">
+    <h2>{{ translations.generate_report }}</h2>
+
+    <label for="start_date">{{ translations.start_date }}</label>
+    <input type="date" id="start_date">
+
+    <label for="end_date">{{ translations.end_date }}</label>
+    <input type="date" id="end_date">
+
+    <button onclick="generateReport()">{{ translations.generate_pdf }}</button>
+</div>
+
+<div class="clear-section">
+    <button onclick="clearAllExpenses()" style="background-color: red; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 20px;">
+        🗑 {{ translations.clear_expenses }}
+    </button>
+</div>
+
+
+
+<script>
+async function clearAllExpenses() {
+    if (!confirm("¿Estás seguro de que deseas eliminar todas las gastos?")) {
+        return;
+    }
+
+    const response = await fetch("/clear_expenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+    });
+
+    if (response.ok) {
+        alert("¡Todas las gastos han sido eliminadas!");
+        location.reload();
+    } else {
+        alert("Error al eliminar los gastos.");
+    }
+}
+</script>
+
+
+</body>
+</html>
